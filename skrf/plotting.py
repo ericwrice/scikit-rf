@@ -912,6 +912,7 @@ def setup_matplotlib_plotting():
     network.Network.plot_s_db_time = plot_s_db_time
     network.Network.plot_s_smith = plot_s_smith
     network.Network.plot_it_all = plot_it_all
+    network.Network.plot_stability = plot_stability
 
     calibration.Calibration.plot_errors = plot_calibration_errors
     calibration.Calibration.plot_caled_ntwks = plot_caled_ntwks
@@ -1532,6 +1533,101 @@ def plot_s_smith(self, m=None, n=None,r=1, ax=None, show_legend=True,\
         ax.set_xlabel('Real')
         ax.set_ylabel('Imaginary')
 
+def computeStabilityCircles(ntwk):
+    """
+    Computes source and load stability circles. 
+
+    .. [Pozar] D. M. Pozar, Microwave engineering, 4th ed. J. Wiley, 2012.
+    """
+
+    # TODO fix network slicing
+    # ntwk = ntwk[f'{f} hz']
+    d = ntwk.determinate[0]
+    num1 = (ntwk.s[0,1,1]-d*ntwk.s[0,0,0].conjugate()).conjugate()
+    num2 = abs(ntwk.s[0,1,0]*ntwk.s[0,0,1])
+    num3 = (ntwk.s[0,0,0]-d*ntwk.s[0,1,1].conjugate()).conjugate()
+    den1 = abs(ntwk.s[0,1,1])**2-abs(d)**2
+    den2 = abs(ntwk.s[0,0,0])**2-abs(d)**2
+    cl = num1/den1
+    rl = num2/den1
+    cs = num3/den2
+    rs = num2/den2
+    return cl, rl, cs, rs
+
+def plot_stability(self, ax=None, show_legend=True, chart_type='z',  
+    draw_labels=False, label_axes=False, draw_vswr=None, *args, **kwargs):
+    r"""
+    Plots network's stability circles on a smith chart.
+
+
+
+    Parameters
+    ----------
+    ax : matplotlib.Axes object, optional
+            axes to plot on. in case you want to update an existing
+            plot.
+    show_legend : boolean, optional
+            to turn legend show legend of not, optional
+    chart_type : ['z','y']
+        draw impedance or admittance contours
+    draw_labels : Boolean
+        annotate chart with impedance values
+    label_axes : Boolean
+        Label axis with titles `Real` and `Imaginary`
+    border : Boolean
+        draw rectangular border around image with ticks
+    draw_vswr : list of numbers, Boolean or None
+        draw VSWR circles. If True, default values are used.
+
+    \*args : arguments, optional
+            passed to the matplotlib.plot command
+    \*\*kwargs : keyword arguments, optional
+            passed to the matplotlib.plot command
+
+
+    See Also
+    --------
+    plot_s_smith - plots s parameters on a smith chart
+    plot_vs_frequency_generic - generic plotting function
+    smith -  draws a smith chart
+
+    Examples
+    --------
+    >>> myntwk.plot_stability()
+    >>> myntwk.plot_s_smith(m=0,n=1,color='b', marker='x')
+    """
+    assert len(self) == 1, 'Can only handle 1 frequency at a time'
+    
+    if ax is None:
+        ax = plt.gca()
+
+    cl, rl, cs, rs = computeStabilityCircles(self)
+    
+    angle = npy.linspace(0, 2*npy.pi, 100)
+
+    # Plot load stability circle
+    x = rl * npy.cos(angle)+cl.real
+    y = rl * npy.sin(angle)+cl.imag
+    plt.plot(x,y, label='Load Stability')
+    # Shade region of instability
+    circle1 = plt.Circle((cl.real, cl.imag), rl, alpha=0.2)
+    ax.add_artist(circle1)
+    
+    # Plot source stability circle
+    x = rs * npy.cos(angle)+cs.real
+    y = rs * npy.sin(angle)+cs.imag
+    plt.plot(x,y, label='Source Stability')
+    # Shade region of instability
+    circle2 = plt.Circle((cs.real, cs.imag), rs, alpha=0.2)
+    ax.add_artist(circle2)
+
+    #draw legend
+    if show_legend:
+        ax.legend()
+
+    if label_axes:
+        ax.set_xlabel('Real')
+        ax.set_ylabel('Imaginary')
 
 def plot_it_all(self, *args, **kwargs):
     r"""

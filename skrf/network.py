@@ -1732,10 +1732,27 @@ class Network:
         """
         assert self.nports == 2, "Stability factor K is only defined for two ports"
 
-        D = self.s[:, 0, 0] * self.s[:, 1, 1] - self.s[:, 0, 1] * self.s[:, 1, 0]
+        D = self.determinate
         K = (1 - npy.abs(self.s[:, 0, 0]) ** 2 - npy.abs(self.s[:, 1, 1]) ** 2 + npy.abs(D) ** 2) / (
         2 * npy.abs(self.s[:, 0, 1]) * npy.abs(self.s[:, 1, 0]))
         return K
+    
+    @property
+    def determinate(self) -> npy.ndarray:
+        """
+        Determinate of a two port netowrk
+
+        .. math::
+            D = S_{11} S_{22} - S_{12} S_{21}
+
+        Returns
+        -------
+        D : :class:`numpy.ndarray` of shape `f`
+        """
+        assert self.nports == 2, "Determinate is only defined for two ports"
+
+        D = self.s[:, 0, 0] * self.s[:, 1, 1] - self.s[:, 0, 1] * self.s[:, 1, 0]
+        return D
 
     @property
     def group_delay(self) -> npy.ndarray:
