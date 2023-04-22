@@ -913,6 +913,7 @@ def setup_matplotlib_plotting():
     network.Network.plot_s_smith = plot_s_smith
     network.Network.plot_it_all = plot_it_all
     network.Network.plot_stability = plot_stability
+    network.Network.plot_gain = plot_gain
 
     calibration.Calibration.plot_errors = plot_calibration_errors
     calibration.Calibration.plot_caled_ntwks = plot_caled_ntwks
@@ -1532,6 +1533,59 @@ def plot_s_smith(self, m=None, n=None,r=1, ax=None, show_legend=True,\
     if label_axes:
         ax.set_xlabel('Real')
         ax.set_ylabel('Imaginary')
+        
+def computegaincircles(ntwk):
+    # check for unconditional stability
+    assert len(ntwk) == 1
+    assert ntwk.stability > 1 and ntwk.determinate < 1
+    u = abs(ntwk.s12)*abs(ntwk.s21)*abs(ntwk.s11)*abs(ntwk.s22)/((1-abs(ntwk.s11)**2)*(1-abs(ntwk.s22)**2))
+    
+def plot_gain(self, ax=None, show_legend=True, chart_type='z',  
+    draw_labels=False, label_axes=False, draw_vswr=None, *args, **kwargs):
+    r"""
+    Plots network's stability circles on a smith chart.
+
+
+
+    Parameters
+    ----------
+    ax : matplotlib.Axes object, optional
+            axes to plot on. in case you want to update an existing
+            plot.
+    show_legend : boolean, optional
+            to turn legend show legend of not, optional
+    chart_type : ['z','y']
+        draw impedance or admittance contours
+    draw_labels : Boolean
+        annotate chart with impedance values
+    label_axes : Boolean
+        Label axis with titles `Real` and `Imaginary`
+    border : Boolean
+        draw rectangular border around image with ticks
+    draw_vswr : list of numbers, Boolean or None
+        draw VSWR circles. If True, default values are used.
+
+    \*args : arguments, optional
+            passed to the matplotlib.plot command
+    \*\*kwargs : keyword arguments, optional
+            passed to the matplotlib.plot command
+
+
+    See Also
+    --------
+    plot_s_smith - plots s parameters on a smith chart
+    plot_vs_frequency_generic - generic plotting function
+    smith -  draws a smith chart
+
+    Examples
+    --------
+    >>> myntwk.plot_stability()
+    >>> myntwk.plot_s_smith(m=0,n=1,color='b', marker='x')
+    """
+    assert len(self) == 1, 'Can only handle 1 frequency at a time'
+    
+    if ax is None:
+        ax = plt.gca()
 
 def computeStabilityCircles(ntwk):
     """
