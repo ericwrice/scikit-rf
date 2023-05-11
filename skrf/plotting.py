@@ -1534,7 +1534,7 @@ def plot_s_smith(self, m=None, n=None,r=1, ax=None, show_legend=True,\
         ax.set_xlabel('Real')
         ax.set_ylabel('Imaginary')
         
-def computegaincircles(ntwk):
+def compute_gain_circles(ntwk):
     # check for unconditional stability
     assert len(ntwk) == 1
     assert ntwk.stability > 1 and ntwk.determinate < 1
@@ -1587,7 +1587,7 @@ def plot_gain(self, ax=None, show_legend=True, chart_type='z',
     if ax is None:
         ax = plt.gca()
 
-def computeStabilityCircles(ntwk):
+def compute_stability_circles(ntwk):
     """
     Computes source and load stability circles. 
 
@@ -1655,7 +1655,7 @@ def plot_stability(self, ax=None, show_legend=True, chart_type='z',
     if ax is None:
         ax = plt.gca()
 
-    cl, rl, cs, rs = computeStabilityCircles(self)
+    cl, rl, cs, rs = compute_stability_circles(self)
     
     angle = npy.linspace(0, 2*npy.pi, 100)
 
